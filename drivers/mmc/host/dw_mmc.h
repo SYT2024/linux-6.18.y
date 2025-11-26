@@ -268,13 +268,10 @@ struct dw_mci_dma_ops {
 	void (*exit)(struct dw_mci *host);
 };
 
-struct dma_pdata;
-
 /* Board platform data */
 struct dw_mci_board {
 	u32 caps;	/* Capabilities */
 
-	struct dma_pdata *data;
 };
 
 /* Support for longer data read timeout */
