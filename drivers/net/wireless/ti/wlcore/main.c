@@ -2427,6 +2427,11 @@ power_off:
 	strscpy(wiphy->fw_version, wl->chip.fw_ver_str,
 		sizeof(wiphy->fw_version));
 
+	/* WLAN_CIPHER_SUITE_AES_CMAC must be last in cipher_suites;
+	   support only with firmware 8.9.1 and newer */
+	if (wl->chip.fw_ver[FW_VER_MAJOR] < 1)
+		wl->hw->wiphy->n_cipher_suites--;
+
 	/*
 	 * Now we know if 11a is supported (info from the NVS), so disable
 	 * 11a channels if not supported
@@ -3597,6 +3602,9 @@ int wlcore_set_key(struct wl1271 *wl, enum set_key_cmd cmd,
 		break;
 	case WL1271_CIPHER_SUITE_GEM:
 		key_type = KEY_GEM;
+		break;
+	case WLAN_CIPHER_SUITE_AES_CMAC:
+		key_type = KEY_IGTK;
 		break;
 	default:
 		wl1271_error("Unknown key algo 0x%x", key_conf->cipher);
@@ -6232,6 +6240,7 @@ static int wl1271_init_ieee80211(struct wl1271 *wl)
 		WLAN_CIPHER_SUITE_TKIP,
 		WLAN_CIPHER_SUITE_CCMP,
 		WL1271_CIPHER_SUITE_GEM,
+		WLAN_CIPHER_SUITE_AES_CMAC,
 	};
 
 	/* The tx descriptor buffer */
