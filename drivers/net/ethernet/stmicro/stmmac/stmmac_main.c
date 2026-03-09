@@ -264,10 +264,10 @@ static void stmmac_verify_args(void)
 
 static void __stmmac_disable_all_queues(struct stmmac_priv *priv)
 {
-	u32 rx_queues_cnt = priv->plat->rx_queues_to_use;
-	u32 tx_queues_cnt = priv->plat->tx_queues_to_use;
-	u32 maxq = max(rx_queues_cnt, tx_queues_cnt);
-	u32 queue;
+	u8 rx_queues_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_queues_cnt = priv->plat->tx_queues_to_use;
+	u8 maxq = max(rx_queues_cnt, tx_queues_cnt);
+	u8 queue;
 
 	for (queue = 0; queue < maxq; queue++) {
 		struct stmmac_channel *ch = &priv->channel[queue];
@@ -291,9 +291,9 @@ static void __stmmac_disable_all_queues(struct stmmac_priv *priv)
  */
 static void stmmac_disable_all_queues(struct stmmac_priv *priv)
 {
-	u32 rx_queues_cnt = priv->plat->rx_queues_to_use;
+	u8 rx_queues_cnt = priv->plat->rx_queues_to_use;
 	struct stmmac_rx_queue *rx_q;
-	u32 queue;
+	u8 queue;
 
 	/* synchronize_rcu() needed for pending XDP buffers to drain */
 	for (queue = 0; queue < rx_queues_cnt; queue++) {
@@ -313,10 +313,10 @@ static void stmmac_disable_all_queues(struct stmmac_priv *priv)
  */
 static void stmmac_enable_all_queues(struct stmmac_priv *priv)
 {
-	u32 rx_queues_cnt = priv->plat->rx_queues_to_use;
-	u32 tx_queues_cnt = priv->plat->tx_queues_to_use;
-	u32 maxq = max(rx_queues_cnt, tx_queues_cnt);
-	u32 queue;
+	u8 rx_queues_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_queues_cnt = priv->plat->tx_queues_to_use;
+	u8 maxq = max(rx_queues_cnt, tx_queues_cnt);
+	u8 queue;
 
 	for (queue = 0; queue < maxq; queue++) {
 		struct stmmac_channel *ch = &priv->channel[queue];
@@ -458,8 +458,8 @@ static inline u32 stmmac_rx_dirty(struct stmmac_priv *priv, u32 queue)
 
 static bool stmmac_eee_tx_busy(struct stmmac_priv *priv)
 {
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 queue;
 
 	/* check if all TX queues have the work finished */
 	for (queue = 0; queue < tx_cnt; queue++) {
@@ -990,7 +990,7 @@ static int stmmac_legacy_serdes_power_up(struct stmmac_priv *priv)
 static void stmmac_mac_flow_ctrl(struct stmmac_priv *priv, u32 duplex,
 				 unsigned int flow_ctrl)
 {
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
 
 	stmmac_flow_ctrl(priv, priv->hw, duplex, flow_ctrl, priv->pause_time,
 			 tx_cnt);
@@ -1491,10 +1491,10 @@ static int stmmac_phylink_setup(struct stmmac_priv *priv)
 static void stmmac_display_rx_rings(struct stmmac_priv *priv,
 				    struct stmmac_dma_conf *dma_conf)
 {
-	u32 rx_cnt = priv->plat->rx_queues_to_use;
+	u8 rx_cnt = priv->plat->rx_queues_to_use;
 	unsigned int desc_size;
 	void *head_rx;
-	u32 queue;
+	u8 queue;
 
 	/* Display RX rings */
 	for (queue = 0; queue < rx_cnt; queue++) {
@@ -1514,10 +1514,10 @@ static void stmmac_display_rx_rings(struct stmmac_priv *priv,
 static void stmmac_display_tx_rings(struct stmmac_priv *priv,
 				    struct stmmac_dma_conf *dma_conf)
 {
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
 	unsigned int desc_size;
 	void *head_tx;
-	u32 queue;
+	u8 queue;
 
 	/* Display TX rings */
 	for (queue = 0; queue < tx_cnt; queue++) {
@@ -1631,9 +1631,9 @@ static void stmmac_clear_tx_descriptors(struct stmmac_priv *priv,
 static void stmmac_clear_descriptors(struct stmmac_priv *priv,
 				     struct stmmac_dma_conf *dma_conf)
 {
-	u32 rx_queue_cnt = priv->plat->rx_queues_to_use;
-	u32 tx_queue_cnt = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 rx_queue_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_queue_cnt = priv->plat->tx_queues_to_use;
+	u8 queue;
 
 	/* Clear the RX descriptors */
 	for (queue = 0; queue < rx_queue_cnt; queue++)
@@ -1945,7 +1945,7 @@ static int init_dma_rx_desc_rings(struct net_device *dev,
 				  gfp_t flags)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 rx_count = priv->plat->rx_queues_to_use;
+	u8 rx_count = priv->plat->rx_queues_to_use;
 	int queue;
 	int ret;
 
@@ -2058,8 +2058,8 @@ static int init_dma_tx_desc_rings(struct net_device *dev,
 				  struct stmmac_dma_conf *dma_conf)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 tx_queue_cnt;
-	u32 queue;
+	u8 tx_queue_cnt;
+	u8 queue;
 
 	tx_queue_cnt = priv->plat->tx_queues_to_use;
 
@@ -2130,8 +2130,8 @@ static void dma_free_tx_skbufs(struct stmmac_priv *priv,
  */
 static void stmmac_free_tx_skbufs(struct stmmac_priv *priv)
 {
-	u32 tx_queue_cnt = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 tx_queue_cnt = priv->plat->tx_queues_to_use;
+	u8 queue;
 
 	for (queue = 0; queue < tx_queue_cnt; queue++)
 		dma_free_tx_skbufs(priv, &priv->dma_conf, queue);
@@ -2181,8 +2181,8 @@ static void __free_dma_rx_desc_resources(struct stmmac_priv *priv,
 static void free_dma_rx_desc_resources(struct stmmac_priv *priv,
 				       struct stmmac_dma_conf *dma_conf)
 {
-	u32 rx_count = priv->plat->rx_queues_to_use;
-	u32 queue;
+	u8 rx_count = priv->plat->rx_queues_to_use;
+	u8 queue;
 
 	/* Free RX queue resources */
 	for (queue = 0; queue < rx_count; queue++)
@@ -2225,8 +2225,8 @@ static void __free_dma_tx_desc_resources(struct stmmac_priv *priv,
 static void free_dma_tx_desc_resources(struct stmmac_priv *priv,
 				       struct stmmac_dma_conf *dma_conf)
 {
-	u32 tx_count = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 tx_count = priv->plat->tx_queues_to_use;
+	u8 queue;
 
 	/* Free TX queue resources */
 	for (queue = 0; queue < tx_count; queue++)
@@ -2322,8 +2322,8 @@ static int __alloc_dma_rx_desc_resources(struct stmmac_priv *priv,
 static int alloc_dma_rx_desc_resources(struct stmmac_priv *priv,
 				       struct stmmac_dma_conf *dma_conf)
 {
-	u32 rx_count = priv->plat->rx_queues_to_use;
-	u32 queue;
+	u8 rx_count = priv->plat->rx_queues_to_use;
+	u8 queue;
 	int ret;
 
 	/* RX queues buffers and DMA */
@@ -2394,8 +2394,8 @@ static int __alloc_dma_tx_desc_resources(struct stmmac_priv *priv,
 static int alloc_dma_tx_desc_resources(struct stmmac_priv *priv,
 				       struct stmmac_dma_conf *dma_conf)
 {
-	u32 tx_count = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 tx_count = priv->plat->tx_queues_to_use;
+	u8 queue;
 	int ret;
 
 	/* TX queues buffers and DMA */
@@ -2459,8 +2459,8 @@ static void free_dma_desc_resources(struct stmmac_priv *priv,
  */
 static void stmmac_mac_enable_rx_queues(struct stmmac_priv *priv)
 {
-	u32 rx_queues_count = priv->plat->rx_queues_to_use;
-	int queue;
+	u8 rx_queues_count = priv->plat->rx_queues_to_use;
+	u8 queue;
 	u8 mode;
 
 	for (queue = 0; queue < rx_queues_count; queue++) {
@@ -2523,10 +2523,10 @@ static void stmmac_stop_tx_dma(struct stmmac_priv *priv, u32 chan)
 
 static void stmmac_enable_all_dma_irq(struct stmmac_priv *priv)
 {
-	u32 rx_channels_count = priv->plat->rx_queues_to_use;
-	u32 tx_channels_count = priv->plat->tx_queues_to_use;
-	u32 dma_csr_ch = max(rx_channels_count, tx_channels_count);
-	u32 chan;
+	u8 rx_channels_count = priv->plat->rx_queues_to_use;
+	u8 tx_channels_count = priv->plat->tx_queues_to_use;
+	u8 dma_csr_ch = max(rx_channels_count, tx_channels_count);
+	u8 chan;
 
 	for (chan = 0; chan < dma_csr_ch; chan++) {
 		struct stmmac_channel *ch = &priv->channel[chan];
@@ -2546,9 +2546,9 @@ static void stmmac_enable_all_dma_irq(struct stmmac_priv *priv)
  */
 static void stmmac_start_all_dma(struct stmmac_priv *priv)
 {
-	u32 rx_channels_count = priv->plat->rx_queues_to_use;
-	u32 tx_channels_count = priv->plat->tx_queues_to_use;
-	u32 chan = 0;
+	u8 rx_channels_count = priv->plat->rx_queues_to_use;
+	u8 tx_channels_count = priv->plat->tx_queues_to_use;
+	u8 chan;
 
 	for (chan = 0; chan < rx_channels_count; chan++)
 		stmmac_start_rx_dma(priv, chan);
@@ -2565,9 +2565,9 @@ static void stmmac_start_all_dma(struct stmmac_priv *priv)
  */
 static void stmmac_stop_all_dma(struct stmmac_priv *priv)
 {
-	u32 rx_channels_count = priv->plat->rx_queues_to_use;
-	u32 tx_channels_count = priv->plat->tx_queues_to_use;
-	u32 chan = 0;
+	u8 rx_channels_count = priv->plat->rx_queues_to_use;
+	u8 tx_channels_count = priv->plat->tx_queues_to_use;
+	u8 chan;
 
 	for (chan = 0; chan < rx_channels_count; chan++)
 		stmmac_stop_rx_dma(priv, chan);
@@ -2584,14 +2584,14 @@ static void stmmac_stop_all_dma(struct stmmac_priv *priv)
  */
 static void stmmac_dma_operation_mode(struct stmmac_priv *priv)
 {
-	u32 rx_channels_count = priv->plat->rx_queues_to_use;
-	u32 tx_channels_count = priv->plat->tx_queues_to_use;
+	u8 rx_channels_count = priv->plat->rx_queues_to_use;
+	u8 tx_channels_count = priv->plat->tx_queues_to_use;
 	int rxfifosz = priv->plat->rx_fifo_size;
 	int txfifosz = priv->plat->tx_fifo_size;
 	u32 txmode = 0;
 	u32 rxmode = 0;
-	u32 chan = 0;
 	u8 qmode = 0;
+	u8 chan;
 
 	if (rxfifosz == 0)
 		rxfifosz = priv->dma_cap.rx_fifo_size;
@@ -3052,8 +3052,8 @@ static void stmmac_set_dma_operation_mode(struct stmmac_priv *priv, u32 txmode,
 {
 	u8 rxqmode = priv->plat->rx_queues_cfg[chan].mode_to_use;
 	u8 txqmode = priv->plat->tx_queues_cfg[chan].mode_to_use;
-	u32 rx_channels_count = priv->plat->rx_queues_to_use;
-	u32 tx_channels_count = priv->plat->tx_queues_to_use;
+	u8 rx_channels_count = priv->plat->rx_queues_to_use;
+	u8 tx_channels_count = priv->plat->tx_queues_to_use;
 	int rxfifosz = priv->plat->rx_fifo_size;
 	int txfifosz = priv->plat->tx_fifo_size;
 
@@ -3128,12 +3128,12 @@ static int stmmac_napi_check(struct stmmac_priv *priv, u32 chan, u32 dir)
  */
 static void stmmac_dma_interrupt(struct stmmac_priv *priv)
 {
-	u32 tx_channel_count = priv->plat->tx_queues_to_use;
-	u32 rx_channel_count = priv->plat->rx_queues_to_use;
-	u32 channels_to_check = tx_channel_count > rx_channel_count ?
-				tx_channel_count : rx_channel_count;
-	u32 chan;
+	u8 tx_channel_count = priv->plat->tx_queues_to_use;
+	u8 rx_channel_count = priv->plat->rx_queues_to_use;
+	u8 channels_to_check = tx_channel_count > rx_channel_count ?
+			       tx_channel_count : rx_channel_count;
 	int status[MAX_T(u32, MTL_MAX_TX_QUEUES, MTL_MAX_RX_QUEUES)];
+	u8 chan;
 
 	/* Make sure we never check beyond our status buffer. */
 	if (WARN_ON_ONCE(channels_to_check > ARRAY_SIZE(status)))
@@ -3277,13 +3277,13 @@ static int stmmac_prereset_configure(struct stmmac_priv *priv)
  */
 static int stmmac_init_dma_engine(struct stmmac_priv *priv)
 {
-	u32 rx_channels_count = priv->plat->rx_queues_to_use;
-	u32 tx_channels_count = priv->plat->tx_queues_to_use;
-	u32 dma_csr_ch = max(rx_channels_count, tx_channels_count);
+	u8 rx_channels_count = priv->plat->rx_queues_to_use;
+	u8 tx_channels_count = priv->plat->tx_queues_to_use;
+	u8 dma_csr_ch = max(rx_channels_count, tx_channels_count);
 	struct stmmac_rx_queue *rx_q;
 	struct stmmac_tx_queue *tx_q;
-	u32 chan = 0;
 	int ret = 0;
+	u8 chan;
 
 	ret = stmmac_prereset_configure(priv);
 	if (ret)
@@ -3394,9 +3394,9 @@ static enum hrtimer_restart stmmac_tx_timer(struct hrtimer *t)
  */
 static void stmmac_init_coalesce(struct stmmac_priv *priv)
 {
-	u32 tx_channel_count = priv->plat->tx_queues_to_use;
-	u32 rx_channel_count = priv->plat->rx_queues_to_use;
-	u32 chan;
+	u8 tx_channel_count = priv->plat->tx_queues_to_use;
+	u8 rx_channel_count = priv->plat->rx_queues_to_use;
+	u8 chan;
 
 	for (chan = 0; chan < tx_channel_count; chan++) {
 		struct stmmac_tx_queue *tx_q = &priv->dma_conf.tx_queue[chan];
@@ -3413,9 +3413,9 @@ static void stmmac_init_coalesce(struct stmmac_priv *priv)
 
 static void stmmac_set_rings_length(struct stmmac_priv *priv)
 {
-	u32 rx_channels_count = priv->plat->rx_queues_to_use;
-	u32 tx_channels_count = priv->plat->tx_queues_to_use;
-	u32 chan;
+	u8 rx_channels_count = priv->plat->rx_queues_to_use;
+	u8 tx_channels_count = priv->plat->tx_queues_to_use;
+	u8 chan;
 
 	/* set TX ring length */
 	for (chan = 0; chan < tx_channels_count; chan++)
@@ -3435,9 +3435,9 @@ static void stmmac_set_rings_length(struct stmmac_priv *priv)
  */
 static void stmmac_set_tx_queue_weight(struct stmmac_priv *priv)
 {
-	u32 tx_queues_count = priv->plat->tx_queues_to_use;
+	u8 tx_queues_count = priv->plat->tx_queues_to_use;
 	u32 weight;
-	u32 queue;
+	u8 queue;
 
 	for (queue = 0; queue < tx_queues_count; queue++) {
 		weight = priv->plat->tx_queues_cfg[queue].weight;
@@ -3452,9 +3452,9 @@ static void stmmac_set_tx_queue_weight(struct stmmac_priv *priv)
  */
 static void stmmac_configure_cbs(struct stmmac_priv *priv)
 {
-	u32 tx_queues_count = priv->plat->tx_queues_to_use;
+	u8 tx_queues_count = priv->plat->tx_queues_to_use;
 	u32 mode_to_use;
-	u32 queue;
+	u8 queue;
 
 	/* queue 0 is reserved for legacy traffic */
 	for (queue = 1; queue < tx_queues_count; queue++) {
@@ -3478,8 +3478,8 @@ static void stmmac_configure_cbs(struct stmmac_priv *priv)
  */
 static void stmmac_rx_queue_dma_chan_map(struct stmmac_priv *priv)
 {
-	u32 rx_queues_count = priv->plat->rx_queues_to_use;
-	u32 queue;
+	u8 rx_queues_count = priv->plat->rx_queues_to_use;
+	u8 queue;
 	u32 chan;
 
 	for (queue = 0; queue < rx_queues_count; queue++) {
@@ -3495,8 +3495,8 @@ static void stmmac_rx_queue_dma_chan_map(struct stmmac_priv *priv)
  */
 static void stmmac_mac_config_rx_queues_prio(struct stmmac_priv *priv)
 {
-	u32 rx_queues_count = priv->plat->rx_queues_to_use;
-	u32 queue;
+	u8 rx_queues_count = priv->plat->rx_queues_to_use;
+	u8 queue;
 	u32 prio;
 
 	for (queue = 0; queue < rx_queues_count; queue++) {
@@ -3515,8 +3515,8 @@ static void stmmac_mac_config_rx_queues_prio(struct stmmac_priv *priv)
  */
 static void stmmac_mac_config_tx_queues_prio(struct stmmac_priv *priv)
 {
-	u32 tx_queues_count = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 tx_queues_count = priv->plat->tx_queues_to_use;
+	u8 queue;
 	u32 prio;
 
 	for (queue = 0; queue < tx_queues_count; queue++) {
@@ -3535,9 +3535,9 @@ static void stmmac_mac_config_tx_queues_prio(struct stmmac_priv *priv)
  */
 static void stmmac_mac_config_rx_queues_routing(struct stmmac_priv *priv)
 {
-	u32 rx_queues_count = priv->plat->rx_queues_to_use;
-	u32 queue;
+	u8 rx_queues_count = priv->plat->rx_queues_to_use;
 	u8 packet;
+	u8 queue;
 
 	for (queue = 0; queue < rx_queues_count; queue++) {
 		/* no specific packet type routing specified for the queue */
@@ -3572,8 +3572,8 @@ static void stmmac_mac_config_rss(struct stmmac_priv *priv)
  */
 static void stmmac_mtl_configuration(struct stmmac_priv *priv)
 {
-	u32 rx_queues_count = priv->plat->rx_queues_to_use;
-	u32 tx_queues_count = priv->plat->tx_queues_to_use;
+	u8 rx_queues_count = priv->plat->rx_queues_to_use;
+	u8 tx_queues_count = priv->plat->tx_queues_to_use;
 
 	if (tx_queues_count > 1)
 		stmmac_set_tx_queue_weight(priv);
@@ -3641,10 +3641,10 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
 static int stmmac_hw_setup(struct net_device *dev)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 rx_cnt = priv->plat->rx_queues_to_use;
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 rx_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
 	bool sph_en;
-	u32 chan;
+	u8 chan;
 	int ret;
 
 	/* Make sure RX clock is enabled */
@@ -4060,7 +4060,8 @@ static struct stmmac_dma_conf *
 stmmac_setup_dma_desc(struct stmmac_priv *priv, unsigned int mtu)
 {
 	struct stmmac_dma_conf *dma_conf;
-	int chan, bfsize, ret;
+	int bfsize, ret;
+	u8 chan;
 
 	dma_conf = kzalloc(sizeof(*dma_conf), GFP_KERNEL);
 	if (!dma_conf) {
@@ -4135,7 +4136,7 @@ static int __stmmac_open(struct net_device *dev,
 			 struct stmmac_dma_conf *dma_conf)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 chan;
+	u8 chan;
 	int ret;
 
 	for (int i = 0; i < MTL_MAX_TX_QUEUES; i++)
@@ -4234,7 +4235,7 @@ err_dma_resources:
 static void __stmmac_release(struct net_device *dev)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 chan;
+	u8 chan;
 
 	/* Stop and disconnect the PHY */
 	phylink_stop(priv->phylink);
@@ -6106,7 +6107,7 @@ static int stmmac_set_features(struct net_device *netdev,
 
 	if (priv->sph_capable) {
 		bool sph_en = (priv->hw->rx_csum > 0) && priv->sph_active;
-		u32 chan;
+		u8 chan;
 
 		for (chan = 0; chan < priv->plat->rx_queues_to_use; chan++)
 			stmmac_enable_sph(priv, priv->ioaddr, sph_en, chan);
@@ -6126,11 +6127,11 @@ static int stmmac_set_features(struct net_device *netdev,
 
 static void stmmac_common_interrupt(struct stmmac_priv *priv)
 {
-	u32 rx_cnt = priv->plat->rx_queues_to_use;
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
-	u32 queues_count;
-	u32 queue;
+	u8 rx_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 queues_count;
 	bool xmac;
+	u8 queue;
 
 	xmac = dwmac_is_xmac(priv->plat->core_type);
 	queues_count = (rx_cnt > tx_cnt) ? rx_cnt : tx_cnt;
@@ -6428,9 +6429,9 @@ static int stmmac_rings_status_show(struct seq_file *seq, void *v)
 {
 	struct net_device *dev = seq->private;
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 rx_count = priv->plat->rx_queues_to_use;
-	u32 tx_count = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 rx_count = priv->plat->rx_queues_to_use;
+	u8 tx_count = priv->plat->tx_queues_to_use;
+	u8 queue;
 
 	if ((dev->flags & IFF_UP) == 0)
 		return 0;
@@ -6555,9 +6556,9 @@ static int stmmac_dma_cap_show(struct seq_file *seq, void *v)
 		   priv->dma_cap.number_rx_channel);
 	seq_printf(seq, "\tNumber of Additional TX channel: %d\n",
 		   priv->dma_cap.number_tx_channel);
-	seq_printf(seq, "\tNumber of Additional RX queues: %d\n",
+	seq_printf(seq, "\tNumber of Additional RX queues: %u\n",
 		   priv->dma_cap.number_rx_queues);
-	seq_printf(seq, "\tNumber of Additional TX queues: %d\n",
+	seq_printf(seq, "\tNumber of Additional TX queues: %u\n",
 		   priv->dma_cap.number_tx_queues);
 	seq_printf(seq, "\tEnhanced descriptors: %s\n",
 		   (priv->dma_cap.enh_desc) ? "Y" : "N");
@@ -7005,7 +7006,7 @@ void stmmac_enable_tx_queue(struct stmmac_priv *priv, u32 queue)
 void stmmac_xdp_release(struct net_device *dev)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 chan;
+	u8 chan;
 
 	/* Ensure tx function is not running */
 	netif_tx_disable(dev);
@@ -7038,13 +7039,13 @@ void stmmac_xdp_release(struct net_device *dev)
 int stmmac_xdp_open(struct net_device *dev)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 rx_cnt = priv->plat->rx_queues_to_use;
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
-	u32 dma_csr_ch = max(rx_cnt, tx_cnt);
+	u8 rx_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 dma_csr_ch = max(rx_cnt, tx_cnt);
 	struct stmmac_rx_queue *rx_q;
 	struct stmmac_tx_queue *tx_q;
 	bool sph_en;
-	u32 chan;
+	u8 chan;
 	int ret;
 
 	ret = alloc_dma_desc_resources(priv, &priv->dma_conf);
@@ -7166,10 +7167,10 @@ int stmmac_xsk_wakeup(struct net_device *dev, u32 queue, u32 flags)
 static void stmmac_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *stats)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
-	u32 rx_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 rx_cnt = priv->plat->rx_queues_to_use;
 	unsigned int start;
-	int q;
+	u8 q;
 
 	for (q = 0; q < tx_cnt; q++) {
 		struct stmmac_txq_stats *txq_stats = &priv->xstats.txq_stats[q];
@@ -7458,7 +7459,7 @@ static int stmmac_hw_init(struct stmmac_priv *priv)
 static void stmmac_napi_add(struct net_device *dev)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 queue, maxq;
+	u8 queue, maxq;
 
 	maxq = max(priv->plat->rx_queues_to_use, priv->plat->tx_queues_to_use);
 
@@ -7487,7 +7488,7 @@ static void stmmac_napi_add(struct net_device *dev)
 static void stmmac_napi_del(struct net_device *dev)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
-	u32 queue, maxq;
+	u8 queue, maxq;
 
 	maxq = max(priv->plat->rx_queues_to_use, priv->plat->tx_queues_to_use);
 
@@ -7505,7 +7506,7 @@ static void stmmac_napi_del(struct net_device *dev)
 	}
 }
 
-int stmmac_reinit_queues(struct net_device *dev, u32 rx_cnt, u32 tx_cnt)
+int stmmac_reinit_queues(struct net_device *dev, u8 rx_cnt, u8 tx_cnt)
 {
 	struct stmmac_priv *priv = netdev_priv(dev);
 	int ret = 0, i;
@@ -7708,8 +7709,8 @@ static int __stmmac_dvr_probe(struct device *device,
 	struct net_device *ndev = NULL;
 	struct stmmac_priv *priv;
 	const char *devname = of_get_property(device->of_node, "label", NULL);
-	u32 rxq;
 	int i, ret = 0;
+	u8 rxq;
 
 	if (!plat_dat->dma_cfg || !plat_dat->dma_cfg->pbl) {
 		dev_err(device, "invalid DMA configuration\n");
@@ -8095,7 +8096,7 @@ int stmmac_suspend(struct device *dev)
 {
 	struct net_device *ndev = dev_get_drvdata(dev);
 	struct stmmac_priv *priv = netdev_priv(ndev);
-	u32 chan;
+	u8 chan;
 
 	if (!ndev || !netif_running(ndev))
 		return 0;
@@ -8169,9 +8170,9 @@ static void stmmac_reset_tx_queue(struct stmmac_priv *priv, u32 queue)
  */
 static void stmmac_reset_queues_param(struct stmmac_priv *priv)
 {
-	u32 rx_cnt = priv->plat->rx_queues_to_use;
-	u32 tx_cnt = priv->plat->tx_queues_to_use;
-	u32 queue;
+	u8 rx_cnt = priv->plat->rx_queues_to_use;
+	u8 tx_cnt = priv->plat->tx_queues_to_use;
+	u8 queue;
 
 	for (queue = 0; queue < rx_cnt; queue++)
 		stmmac_reset_rx_queue(priv, queue);
