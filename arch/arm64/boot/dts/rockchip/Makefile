@@ -205,6 +205,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-lyt-t68m.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-lz-d3568-v3.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-lz-k3568.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-mecsbc.dtb
+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-mmbox-anas3035.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-mrkaio-m68s.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-nanopi-r5c.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-nanopi-r5s.dtb
