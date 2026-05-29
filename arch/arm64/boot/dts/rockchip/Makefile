@@ -187,6 +187,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-tinker-board-3s.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-wxy-oec-turbo-4g.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-x88pro20.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-9tripod-x3568-v4.dtb
+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-alark35-3500.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-anbernic-rg-ds.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-bpi-r2-pro.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-bd-one.dtb
