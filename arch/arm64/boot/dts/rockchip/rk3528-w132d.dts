@@ -1,0 +1,323 @@
+﻿// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
+ * Copyright (c) 2024 Adapted for W132D TV Box
+ *
+ * W132D TV Box Device Tree
+ * SoC: Rockchip RK3528 (DEMO4 DDR4 V11 reference design)
+ * Wireless: UWE5621DS (Unisoc) on SDIO2
+ * Ethernet: GMAC0 RMII with RK630 internal PHY
+ * USB: 1x USB3.0 (DWC3 + combphy) + 3x USB2.0 (EHCI/OHCI + u2phy_host)
+ *
+ * GPIOs (confirmed from W132D Android DTB pinctrl/regulator):
+ *   USB VBUS: GPIO4_PB4  (pinctrl bank 4 pin 0x0c + phandle 0x7e=GPIO4)
+ *   WiFi EN:  GPIO3_PB2  (pinctrl bank 3 pin 0x0a)
+ *   WiFi WK:  GPIO3_PB3  (pinctrl bank 3 pin 0x0b)
+ *   WiFi RST: GPIO3_PB4  (pinctrl bank 3 pin 0x0c)
+ *   Blue LED: GPIO4_PC0  (phandle 0x7e=GPIO4, pin 0x10)
+ *   Red LED:  GPIO4_PB7  (phandle 0x7e=GPIO4, pin 0x0f)
+ *   Green LED:GPIO4_PC1  (phandle 0x7e=GPIO4, pin 0x11)
+ *   IR RX:    GPIO1_PA6
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+#include "rk3528.dtsi"
+
+/ {
+    model = "Rockchip RK3528 W132D TV Box";
+    compatible = "rockchip,rk3528-w132d", "rockchip,rk3528";
+
+    aliases {
+        ethernet0 = &gmac0;
+        mmc0 = &sdmmc;
+        mmc1 = &sdio2;
+        mmc2 = &sdhci;
+    };
+
+    chosen {
+        stdout-path = "serial0:1500000n8";
+    };
+
+    /* --- Power Tree --- */
+    /* DC input: 5V via USB-C or barrel jack */
+    dc_12v: dc-12v {
+        compatible = "regulator-fixed";
+        regulator-name = "dc_12v";
+        regulator-always-on;
+        regulator-boot-on;
+        regulator-min-microvolt = <12000000>;
+        regulator-max-microvolt = <12000000>;
+    };
+
+    vcc5v0_sys: vcc5v0-sys {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc5v0_sys";
+        regulator-always-on;
+        regulator-boot-on;
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+        vin-supply = <&dc_12v>;
+    };
+
+    /* USB VBUS: GPIO4_PB4 (confirmed pinctrl bank4 pin12 + phandle 0x7e=GPIO4) */
+    vcc5v0_host: vcc5v0-host {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc5v0_host";
+        regulator-boot-on;
+        regulator-always-on;
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+        enable-active-high;
+        gpio = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;
+        vin-supply = <&vcc5v0_sys>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&vcc5v0_host_en>;
+    };
+
+    /* SD card and WiFi shared power domain (3.3V) */
+    vcc_sd: vcc-sd {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc_sd";
+        regulator-min-microvolt = <3300000>;
+        regulator-max-microvolt = <3300000>;
+        regulator-always-on;
+        regulator-boot-on;
+        vin-supply = <&vcc5v0_sys>;
+        startup-delay-us = <100000>;
+        off-on-delay-us = <20000>;
+    };
+
+    /* WiFi IO domain (1.8V) */
+    vcc_1v8_wifi: vcc-1v8-wifi {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc_1v8_wifi";
+        regulator-min-microvolt = <1800000>;
+        regulator-max-microvolt = <1800000>;
+        regulator-always-on;
+        vin-supply = <&vcc5v0_sys>;
+    };
+
+    /* --- WiFi SDIO Power Sequence --- */
+    /* GPIO3_PB2 = wifi enable (reg_on), GPIO3_PB4 = wifi reset */
+    sdio_pwrseq: sdio-pwrseq {
+        compatible = "mmc-pwrseq-simple";
+        pinctrl-names = "default";
+        pinctrl-0 = <&wifi_enable_h &wifi_reset>;
+        reset-gpios = <&gpio3 RK_PB2 GPIO_ACTIVE_LOW>;
+        post-power-on-delay-ms = <200>;
+        status = "okay";
+    };
+
+    /* --- GPIO LEDs (all on GPIO4 bank) --- */
+    gpio-leds {
+        compatible = "gpio-leds";
+
+        led-blue {
+            gpios = <&gpio4 RK_PC0 GPIO_ACTIVE_HIGH>;
+            label = "blue:net";
+            linux,default-trigger = "netdev";
+            default-state = "off";
+        };
+
+        led-red {
+            gpios = <&gpio4 RK_PB7 GPIO_ACTIVE_HIGH>;
+            label = "red:status";
+            linux,default-trigger = "heartbeat";
+            default-state = "off";
+        };
+
+        led-green {
+            gpios = <&gpio4 RK_PC1 GPIO_ACTIVE_HIGH>;
+            label = "green:pwr";
+            linux,default-trigger = "default-on";
+            default-state = "on";
+            retain-state-suspended;
+            retain-state-shutdown;
+        };
+    };
+
+    /* --- IR Receiver --- */
+    ir-receiver {
+        compatible = "gpio-ir-receiver";
+        gpios = <&gpio1 RK_PA6 GPIO_ACTIVE_LOW>;
+        linux,rc-map-name = "rc-rc6-mce";
+        status = "okay";
+    };
+};
+
+/* ========= Ethernet: GMAC0 RMII with RK630 internal PHY ========= */
+&gmac0 {
+    phy-mode = "rmii";
+    clock_in_out = "input";
+    phy-handle = <&rmii0_phy>;
+    status = "okay";
+};
+
+&mdio0 {
+    status = "okay";
+
+    rmii0_phy: ethernet-phy@2 {
+        compatible = "ethernet-phy-id0044.1400", "ethernet-phy-ieee802.3-c22";
+        reg = <0x2>;
+        clocks = <&cru CLK_MACPHY>;
+        resets = <&cru SRST_MACPHY>;
+        phy-is-integrated;
+    };
+};
+
+/* ========= USB: 1x USB3.0 (DWC3) + 3x USB2.0 (EHCI/OHCI) ========= */
+/*
+ * Topology (from W132D Android DTB):
+ *   DWC3/XHCI:  u2phy_otg (USB2 lines) + combphy (USB3/PIPE3 lines) -> blue USB3 port
+ *   EHCI/OHCI:  u2phy_host -> 3x USB2 ports
+ */
+&u2phy {
+    status = "okay";
+};
+
+&u2phy_otg {
+    phy-supply = <&vcc5v0_host>;
+    status = "okay";
+};
+
+&u2phy_host {
+    phy-supply = <&vcc5v0_host>;
+    status = "okay";
+};
+
+/* USB3 combo PHY: PIPE3 for DWC3 USB3 controller */
+&combphy {
+    rockchip,enable-ssc;
+    status = "okay";
+};
+
+/* DWC3/XHCI: USB3.0 + USB2.0 combo port */
+&usb_host0_xhci {
+    dr_mode = "host";
+    phys = <&u2phy_otg>, <&combphy PHY_TYPE_USB3>;
+    phy-names = "usb2-phy", "usb3-phy";
+    vbus-supply = <&vcc5v0_host>;
+
+    /* SNPS quirks from Android DTB - required for RK3528 USB stability */
+    snps,dis_enblslpm_quirk;
+    snps,dis-u1u2-quirk;
+    snps,dis-u2-freeclk-exists-quirk;
+    snps,dis-del-phy-power-chg-quirk;
+    snps,dis-tx-ipgap-linecheck-quirk;
+    snps,xhci-trb-ent-quirk;
+    snps,dis_u2_susphy_quirk;
+    snps,dis_u3_susphy_quirk;
+
+    status = "okay";
+};
+
+/* EHCI/OHCI: pure USB2.0 ports (3 additional) */
+&usb_host0_ehci {
+    status = "okay";
+};
+
+&usb_host0_ohci {
+    status = "okay";
+};
+
+/* ========= SDMMC (MicroSD card) ========= */
+&sdmmc {
+    bus-width = <4>;
+    vmmc-supply = <&vcc_sd>;
+    vqmmc-supply = <&vcc_sd>;
+    no-1-8-v;
+    cap-sd-highspeed;
+    disable-wp;
+    status = "okay";
+};
+
+/* ========= SDHCI (eMMC) ========= */
+&sdhci {
+    bus-width = <8>;
+    non-removable;
+    status = "okay";
+};
+
+/* ========= SDIO2 (UWE5621DS WiFi/BT) ========= */
+&sdio2 {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    bus-width = <4>;
+    cap-sd-highspeed;
+    cap-sdio-irq;
+    keep-power-in-suspend;
+    non-removable;
+    no-sd;
+    no-mmc;
+    max-frequency = <150000000>;
+    mmc-pwrseq = <&sdio_pwrseq>;
+    vmmc-supply = <&vcc_sd>;
+    vqmmc-supply = <&vcc_1v8_wifi>;
+    rockchip,use-v2-tuning;
+    sd-uhs-sdr104;
+    status = "okay";
+
+    wifi@1 {
+        compatible = "unisoc,uwe5621ds";
+        reg = <1>;
+    };
+};
+
+/* ========= HDMI ========= */
+&hdmi {
+    status = "okay";
+};
+
+&hdmi_in_vop {
+    status = "okay";
+};
+
+&route_hdmi {
+    status = "okay";
+    connect = <&vop_out_hdmi>;
+};
+
+/* ========= I2C3 ========= */
+&i2c3 {
+    status = "okay";
+};
+
+/* ========= Pinctrl Overrides ========= */
+&pinctrl {
+    /* USB VBUS enable: GPIO4_PB4 */
+    usb {
+        vcc5v0_host_en: vcc5v0-host-en {
+            rockchip,pins = <4 RK_PB4 RK_FUNC_GPIO &pcfg_pull_up>;
+        };
+    };
+
+    /* WiFi SDIO power sequence (GPIO3 bank) */
+    sdio-pwrseq {
+        wifi_enable_h: wifi-enable-h {
+            rockchip,pins = <3 RK_PB2 RK_FUNC_GPIO &pcfg_pull_up>;
+        };
+    };
+
+    wireless-wlan {
+        /* WiFi host wake: GPIO3_PB3 */
+        wifi_host_wake_irq: wifi-host-wake-irq {
+            rockchip,pins = <3 RK_PB3 RK_FUNC_GPIO &pcfg_pull_down>;
+        };
+
+        /* WiFi reset: GPIO3_PB4 */
+        wifi_reset: wifi-reset {
+            rockchip,pins = <3 RK_PB4 RK_FUNC_GPIO &pcfg_output_low>;
+        };
+    };
+
+    /* Bluetooth UART (UART2 M0 on GPIO3_PA2/PA3) */
+    wireless-bluetooth {
+        uart2m0_gpios: uart2m0-gpios {
+            rockchip,pins = <3 RK_PA2 RK_FUNC_GPIO &pcfg_pull_up>;
+        };
+    };
+};
