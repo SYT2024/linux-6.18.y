@@ -14,33 +14,52 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq gcc-aarch64-linux-gnu device-tree-compiler
+          echo "=== DTC version ==="
+          dtc --version
+          echo "=== Cross compiler ==="
+          aarch64-linux-gnu-gcc --version | head -1
 
-      - name: Verify DTS file and Makefile entry exist
+      - name: Check required files exist
         run: |
           echo "=== DTS file ==="
-          ls -la arch/arm64/boot/dts/rockchip/rk3528-w132d.dts
+          ls -la arch/arm64/boot/dts/rockchip/rk3528-w132d.dts || { echo "ERROR: DTS not found!"; exit 1; }
+          echo "=== rk3528.dtsi ==="
+          ls -la arch/arm64/boot/dts/rockchip/rk3528.dtsi || { echo "ERROR: rk3528.dtsi not found!"; exit 1; }
           echo "=== Makefile check ==="
-          grep "rk3528-w132d" arch/arm64/boot/dts/rockchip/Makefile || echo "WARNING: Makefile entry missing (not needed for manual compile)"
+          grep "rk3528-w132d" arch/arm64/boot/dts/rockchip/Makefile || echo "OK: not in Makefile (manual compile)"
 
-      - name: Preprocess DTS (resolve #include)
+      - name: Preprocess DTS
         run: |
-          aarch64-linux-gnu-cpp -nostdinc \
-            -I include \
+          echo "=== Running cpp preprocessor ==="
+          aarch64-linux-gnu-gcc -E -P -x assembler-with-cpp \
+            -nostdinc \
             -I arch/arm64/boot/dts/rockchip \
-            -undef -x assembler-with-cpp \
-            arch/arm64/boot/dts/rockchip/rk3528-w132d.dts \
-            rk3528-w132d.preprocessed.dts
-          echo "=== Preprocessed DTS size ==="
-          wc -l rk3528-w132d.preprocessed.dts
+            -I include \
+            -undef \
+            -o rk3528-w132d.preprocessed.dts \
+            arch/arm64/boot/dts/rockchip/rk3528-w132d.dts 2>&1 | head -50
+          echo "=== Exit code: $? ==="
+          echo "=== Preprocessed DTS lines: $(wc -l < rk3528-w132d.preprocessed.dts) ==="
+          echo "=== First 5 lines of preprocessed DTS ==="
+          head -5 rk3528-w132d.preprocessed.dts
 
       - name: Compile DTB
         run: |
-          dtc -I dts -O dtb -o rk3528-w132d.dtb rk3528-w132d.preprocessed.dts
-          echo "=== Output DTB ==="
-          ls -la rk3528-w132d.dtb
+          echo "=== Running dtc ==="
+          dtc -I dts -O dtb -o rk3528-w132d.dtb rk3528-w132d.preprocessed.dts 2>&1
+          echo "=== Exit code: $? ==="
+          ls -la rk3528-w132d.dtb || echo "DTB not created"
 
       - name: Upload DTB
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: rk3528-w132d-dtb
           path: rk3528-w132d.dtb
+
+      - name: Upload preprocessed DTS (for debugging)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprocessed-dts-debug
+          path: rk3528-w132d.preprocessed.dts
