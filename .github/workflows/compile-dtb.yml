@@ -10,31 +10,37 @@ jobs:
       - name: Checkout kernel source
         uses: actions/checkout@v4
 
-      - name: Install ARM64 cross-compiler
+      - name: Install tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq gcc-aarch64-linux-gnu
+          sudo apt-get install -y -qq gcc-aarch64-linux-gnu device-tree-compiler
 
-      - name: Verify DTS file exists
+      - name: Verify DTS file and Makefile entry exist
         run: |
-          echo "=== Checking DTS file ==="
+          echo "=== DTS file ==="
           ls -la arch/arm64/boot/dts/rockchip/rk3528-w132d.dts
-          echo "=== Checking Makefile entry ==="
-          grep "rk3528-w132d" arch/arm64/boot/dts/rockchip/Makefile || echo "WARNING: Makefile entry not found!"
+          echo "=== Makefile check ==="
+          grep "rk3528-w132d" arch/arm64/boot/dts/rockchip/Makefile || echo "WARNING: Makefile entry missing (not needed for manual compile)"
 
-      - name: Prepare kernel config and compile DTB
+      - name: Preprocess DTS (resolve #include)
         run: |
-          export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-
-          # Use ARM64 default config, not x86
-          make defconfig
-          # Build only W132D DTB  
-          make arch/arm64/boot/dts/rockchip/rk3528-w132d.dtb
-          echo "=== Checking output ==="
-          ls -la arch/arm64/boot/dts/rockchip/rk3528-w132d.dtb
+          aarch64-linux-gnu-cpp -nostdinc \
+            -I include \
+            -I arch/arm64/boot/dts/rockchip \
+            -undef -x assembler-with-cpp \
+            arch/arm64/boot/dts/rockchip/rk3528-w132d.dts \
+            rk3528-w132d.preprocessed.dts
+          echo "=== Preprocessed DTS size ==="
+          wc -l rk3528-w132d.preprocessed.dts
 
-      - name: Upload DTB as artifact
+      - name: Compile DTB
+        run: |
+          dtc -I dts -O dtb -o rk3528-w132d.dtb rk3528-w132d.preprocessed.dts
+          echo "=== Output DTB ==="
+          ls -la rk3528-w132d.dtb
+
+      - name: Upload DTB
         uses: actions/upload-artifact@v4
         with:
           name: rk3528-w132d-dtb
-          path: arch/arm64/boot/dts/rockchip/rk3528-w132d.dtb
+          path: rk3528-w132d.dtb
