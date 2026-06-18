@@ -19,11 +19,8 @@ jobs:
         run: |
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
-          # Generate default config (fast, just need it for DTC includes)
           make defconfig
-          # Compile only W132D DTB
           make dtbs DTBS=rk3528-w132d.dtb
-          # Verify output
           ls -la arch/arm64/boot/dts/rockchip/rk3528-w132d.dtb
 
       - name: Upload DTB as artifact
