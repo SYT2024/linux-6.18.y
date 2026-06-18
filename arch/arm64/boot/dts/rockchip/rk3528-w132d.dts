@@ -18,6 +18,10 @@
  *   Red LED:  GPIO4_PB7  (phandle 0x7e=GPIO4, pin 0x0f)
  *   Green LED:GPIO4_PC1  (phandle 0x7e=GPIO4, pin 0x11)
  *   IR RX:    GPIO1_PA6
+ *
+ * Note: ophub rk3528.dtsi labels the mmc@ffc20000 controller as sdio1.
+ *       The Android DTB calls it sdio1 (second SDIO). We use sdio1 here.
+ *       HDMI nodes removed: labels hdmi/hdmi_in_vop/route_hdmi not in rk3528.dtsi.
  */
 
 /dts-v1/;
@@ -34,7 +38,7 @@
     aliases {
         ethernet0 = &gmac0;
         mmc0 = &sdmmc;
-        mmc1 = &sdio2;
+        mmc1 = &sdio1;
         mmc2 = &sdhci;
     };
 
@@ -43,7 +47,6 @@
     };
 
     /* --- Power Tree --- */
-    /* DC input: 5V via USB-C or barrel jack */
     dc_12v: dc-12v {
         compatible = "regulator-fixed";
         regulator-name = "dc_12v";
@@ -63,7 +66,7 @@
         vin-supply = <&dc_12v>;
     };
 
-    /* USB VBUS: GPIO4_PB4 (confirmed pinctrl bank4 pin12 + phandle 0x7e=GPIO4) */
+    /* USB VBUS: GPIO4_PB4 */
     vcc5v0_host: vcc5v0-host {
         compatible = "regulator-fixed";
         regulator-name = "vcc5v0_host";
@@ -101,8 +104,7 @@
         vin-supply = <&vcc5v0_sys>;
     };
 
-    /* --- WiFi SDIO Power Sequence --- */
-    /* GPIO3_PB2 = wifi enable (reg_on), GPIO3_PB4 = wifi reset */
+    /* WiFi SDIO Power Sequence */
     sdio_pwrseq: sdio-pwrseq {
         compatible = "mmc-pwrseq-simple";
         pinctrl-names = "default";
@@ -112,7 +114,7 @@
         status = "okay";
     };
 
-    /* --- GPIO LEDs (all on GPIO4 bank) --- */
+    /* GPIO LEDs (all on GPIO4 bank) */
     gpio-leds {
         compatible = "gpio-leds";
 
@@ -140,7 +142,7 @@
         };
     };
 
-    /* --- IR Receiver --- */
+    /* IR Receiver */
     ir-receiver {
         compatible = "gpio-ir-receiver";
         gpios = <&gpio1 RK_PA6 GPIO_ACTIVE_LOW>;
@@ -170,11 +172,6 @@
 };
 
 /* ========= USB: 1x USB3.0 (DWC3) + 3x USB2.0 (EHCI/OHCI) ========= */
-/*
- * Topology (from W132D Android DTB):
- *   DWC3/XHCI:  u2phy_otg (USB2 lines) + combphy (USB3/PIPE3 lines) -> blue USB3 port
- *   EHCI/OHCI:  u2phy_host -> 3x USB2 ports
- */
 &u2phy {
     status = "okay";
 };
@@ -189,20 +186,16 @@
     status = "okay";
 };
 
-/* USB3 combo PHY: PIPE3 for DWC3 USB3 controller */
 &combphy {
     rockchip,enable-ssc;
     status = "okay";
 };
 
-/* DWC3/XHCI: USB3.0 + USB2.0 combo port */
 &usb_host0_xhci {
     dr_mode = "host";
     phys = <&u2phy_otg>, <&combphy PHY_TYPE_USB3>;
     phy-names = "usb2-phy", "usb3-phy";
     vbus-supply = <&vcc5v0_host>;
-
-    /* SNPS quirks from Android DTB - required for RK3528 USB stability */
     snps,dis_enblslpm_quirk;
     snps,dis-u1u2-quirk;
     snps,dis-u2-freeclk-exists-quirk;
@@ -211,11 +204,9 @@
     snps,xhci-trb-ent-quirk;
     snps,dis_u2_susphy_quirk;
     snps,dis_u3_susphy_quirk;
-
     status = "okay";
 };
 
-/* EHCI/OHCI: pure USB2.0 ports (3 additional) */
 &usb_host0_ehci {
     status = "okay";
 };
@@ -242,8 +233,9 @@
     status = "okay";
 };
 
-/* ========= SDIO2 (UWE5621DS WiFi/BT) ========= */
-&sdio2 {
+/* ========= SDIO1 (UWE5621DS WiFi/BT) @ ffc20000 ========= */
+/* ophub rk3528.dtsi labels mmc@ffc20000 as sdio1 (Android DTB calls it sdio1 too) */
+&sdio1 {
     #address-cells = <1>;
     #size-cells = <0>;
     bus-width = <4>;
@@ -265,20 +257,6 @@
         compatible = "unisoc,uwe5621ds";
         reg = <1>;
     };
-};
-
-/* ========= HDMI ========= */
-&hdmi {
-    status = "okay";
-};
-
-&hdmi_in_vop {
-    status = "okay";
-};
-
-&route_hdmi {
-    status = "okay";
-    connect = <&vop_out_hdmi>;
 };
 
 /* ========= I2C3 ========= */
@@ -303,18 +281,15 @@
     };
 
     wireless-wlan {
-        /* WiFi host wake: GPIO3_PB3 */
         wifi_host_wake_irq: wifi-host-wake-irq {
             rockchip,pins = <3 RK_PB3 RK_FUNC_GPIO &pcfg_pull_down>;
         };
 
-        /* WiFi reset: GPIO3_PB4 */
         wifi_reset: wifi-reset {
             rockchip,pins = <3 RK_PB4 RK_FUNC_GPIO &pcfg_output_low>;
         };
     };
 
-    /* Bluetooth UART (UART2 M0 on GPIO3_PA2/PA3) */
     wireless-bluetooth {
         uart2m0_gpios: uart2m0-gpios {
             rockchip,pins = <3 RK_PA2 RK_FUNC_GPIO &pcfg_pull_up>;
